@@ -1,0 +1,176 @@
+<!-- FULL UPDATED HTML WITH AGGRESSIVE DISCOUNTING AND REDUCED ROWS -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sally's Sliding Scale Pricing</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f9f9f9;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      margin: 20px;
+    }
+    .input-group-wrapper {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #f9f9f9;
+      padding-top: 10px;
+    }
+    .input-group {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+    }
+    input[type="range"], input[type="number"] {
+      width: 100%;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 8px;
+      border: 1px solid #ddd;
+      text-align: right;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 0.9em;
+      color: #777;
+    }
+    .tiers {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #eaf5ea;
+      border-radius: 10px;
+    }
+    .tiers h2 {
+      margin-top: 0;
+    }
+    .tiers ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    .tiers li {
+      padding: 6px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Sally's Quantity-Based Pricing Tool</h1>
+  <div class="input-group-wrapper">
+    <div class="input-group">
+      <label for="basePrice">Base Price for 1 Unit ($100–$400):</label>
+      <input type="range" id="basePriceRange" min="100" max="400" value="349">
+      <input type="number" id="basePrice" value="349">
+    </div>
+  </div>
+  <div class="input-group">
+    <table>
+      <thead>
+        <tr>
+          <th>Quantity</th>
+          <th>Price per Unit</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody id="priceTable"></tbody>
+    </table>
+  </div>
+  <div class="tiers">
+    <h2>Sample Price Tiers</h2>
+    <ul id="tierList"></ul>
+  </div>
+  <div class="footer">Made by Vernon</div>
+  <script>
+    const baseInput = document.getElementById("basePrice");
+    const baseSlider = document.getElementById("basePriceRange");
+    const tableBody = document.getElementById("priceTable");
+    const tierList = document.getElementById("tierList");
+
+    function formatCurrency(num) {
+      return "$" + Math.round(num).toLocaleString("en-US");
+    }
+
+    function calculateDiscountRate(base) {
+      if (base >= 300) return 0.0095;
+      if (base >= 250) return 0.0075;
+      if (base >= 200) return 0.005;
+      return 0.003;
+    }
+
+    function calculatePrices(base) {
+      const discountRate = calculateDiscountRate(base);
+      tableBody.innerHTML = "";
+      for (let qty = 1; qty <= 100; qty++) {
+        if (![1, 3, 5].includes(qty) && qty % 5 !== 0) continue;
+        let unitPrice;
+        if (qty <= 3) {
+          unitPrice = base;
+        } else {
+          unitPrice = base * (1 - discountRate * (qty - 3));
+          if (unitPrice < 200) unitPrice = 200;
+        }
+        const total = unitPrice * qty;
+        const row = `<tr>
+          <td>${qty}</td>
+          <td>${formatCurrency(unitPrice)}</td>
+          <td>${formatCurrency(total)}</td>
+        </tr>`;
+        tableBody.insertAdjacentHTML("beforeend", row);
+      }
+      renderTiers(base, discountRate);
+    }
+
+    function renderTiers(base, rate) {
+      const tiers = [1, 5, 10, 25, 50, 100];
+      tierList.innerHTML = "";
+      tiers.forEach(qty => {
+        let unitPrice;
+        if (qty <= 3) {
+          unitPrice = base;
+        } else {
+          unitPrice = base * (1 - rate * (qty - 3));
+          if (unitPrice < 200) unitPrice = 200;
+        }
+        const total = unitPrice * qty;
+        tierList.insertAdjacentHTML("beforeend", `<li>${qty} units: ${formatCurrency(unitPrice)} each, Total: ${formatCurrency(total)}</li>`);
+      });
+    }
+
+    function sync() {
+      baseSlider.value = baseInput.value;
+      calculatePrices(parseFloat(baseInput.value));
+    }
+
+    baseInput.addEventListener("input", sync);
+    baseSlider.addEventListener("input", () => {
+      baseInput.value = baseSlider.value;
+      calculatePrices(parseFloat(baseSlider.value));
+    });
+
+    calculatePrices(parseFloat(baseInput.value));
+  </script>
+</body>
+</html>
